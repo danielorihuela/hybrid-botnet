@@ -1,0 +1,8 @@
+name: demo_botnet_p2p
+channels:
+  - defaults
+dependencies:
+  - python=3.7.6
+  - cryptography=2.8
+  - pip=20.0.2
+  - black
