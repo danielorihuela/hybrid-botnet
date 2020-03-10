@@ -23,8 +23,8 @@ class NodeP2P(object):
 
     def __init__(
         self,
-        public_key_path: str,
-        private_key_path: str,
+        public_key_path: str = "/etc/rootkit_demo/public/botnet_p2p/public_key",
+        private_key_path: str = "/etc/rootkit_demo/private_key",
         already_created_socket: socket.socket = None,
     ):
         """ Create an instance of a socket class
@@ -50,7 +50,10 @@ class NodeP2P(object):
 
     def accept(self) -> (socket.socket, address):
         client_socket, addr = self.__socket.accept()
-        return NodeP2P(self.__public_key_path, self.__private_key_path, client_socket), addr
+        return (
+            NodeP2P(self.__public_key_path, self.__private_key_path, client_socket),
+            addr,
+        )
 
     def connect(self, server_host: str, server_port: int):
         self.__socket.connect((server_host, server_port))
