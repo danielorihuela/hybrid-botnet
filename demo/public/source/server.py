@@ -22,18 +22,18 @@ MAX_QUEUE = 4
 logging.info("Starting server ...")
 private_key = "/etc/rootkit_demo/private_key"
 public_key = "/etc/rootkit_demo/public/botnet_p2p/public_key"
-node_socket = NodeP2P(public_key, private_key)
-node_socket.bind(SERVER_HOST, SERVER_PORT)
-node_socket.listen(MAX_QUEUE)
+server_socket = NodeP2P(public_key, private_key)
+server_socket.bind(SERVER_HOST, SERVER_PORT)
+server_socket.listen(MAX_QUEUE)
 
 logging.info("Listening to new connections ...")
 while True:
-    client_socket, addr = node_socket.accept()
+    client_socket, addr = server_socket.accept()
     logging.info(f"New connection accepted")
     client_thread = threading.Thread(target=talk_with_client, args=(client_socket,))
     client_thread.start()
 
-    node_socket.close()
+    server_socket.close()
 
 
 def talk_with_client(client_socket: NodeP2P) -> None:
