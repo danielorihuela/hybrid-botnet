@@ -1,5 +1,6 @@
 """Server side of the p2p communication protocol"""
 
+import logging
 import threading
 
 from botnet_p2p.comm_utils import NodeP2P
