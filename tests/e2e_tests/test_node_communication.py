@@ -16,11 +16,12 @@ actual_msg = None
 actual_hash = None
 actual_trusted = None
 
+with open("/var/lib/tor/hidden_communication/hostname", "r") as onion:
+    comm_onion = onion.read().strip()
+
 
 def server_thread():
     server_socket = NodeP2P(public_key_path, private_key_path)
-    with open("/var/lib/tor/hidden_communication/hostname", "r") as onion:
-        comm_onion = onion.read().strip()
     server_socket.bind(comm_onion, server_port)
     server_socket.listen(1)
     client_socket, addr = server_socket.accept()
@@ -50,7 +51,7 @@ def test_recv_signed_message():
     server.start()
     time.sleep(1)
     client_socket = NodeP2P(public_key_path, private_key_path)
-    client_socket.connect(server_dir, server_port)
+    client_socket.connect(comm_onion, server_port)
     expected_msg_type = 1
     expected_msg = "hola"
     client_socket.send_signed_msg(expected_msg_type, expected_msg)
