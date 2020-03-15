@@ -46,6 +46,10 @@ def verify_message(public_key: str, msg: str, signed_hash: bytes) -> bool:
     return True
 
 
+def calculate_hash(data: str) -> bytes:
+    return hashlib.sha256(data.encode(ENCODING)).hexdigest().encode(ENCODING)
+
+
 def load_private_key(
     private_key_path: str,
     password: str = None
