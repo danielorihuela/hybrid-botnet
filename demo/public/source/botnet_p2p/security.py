@@ -23,10 +23,6 @@ def sign_hash(hash_: bytes, private_key_path: str) -> bytes:
     return signed_hash
 
 
-def calculate_hash(data: str) -> bytes:
-    return hashlib.sha256(data.encode(ENCODING)).hexdigest().encode(ENCODING)
-
-
 def verify_message(public_key: str, msg: str, signed_hash: bytes) -> bool:
     msg_hash = calculate_hash(msg)
     public_key_bytes = load_public_key(public_key)
@@ -44,6 +40,37 @@ def verify_message(public_key: str, msg: str, signed_hash: bytes) -> bool:
         return False
 
     return True
+
+
+def calculate_hash(data: str) -> bytes:
+    return hashlib.sha256(data.encode(ENCODING)).hexdigest().encode(ENCODING)
+
+
+def encrypt(public_key_path: str, msg: str) -> bytes:
+    public_key = load_public_key(public_key_path)
+    msg_in_bytes = msg.encode(ENCODING)
+    ciphertext = public_key.encrypt(
+        msg_in_bytes,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return ciphertext
+
+
+def decrypt(private_key_path: str, ciphertext: bytes) -> str:
+    private_key = load_private_key(private_key_path)
+    plaintext = private_key.decrypt(
+        ciphertext,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return plaintext.decode(ENCODING)
 
 
 def load_private_key(
