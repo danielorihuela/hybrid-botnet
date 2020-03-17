@@ -12,8 +12,3 @@ ENCODING = "latin1"
 
 
 logger = logging.getLogger(__name__)
-handler = logging.StreamHandler()
-logger.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(name)s(%(levelname)s) - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)

