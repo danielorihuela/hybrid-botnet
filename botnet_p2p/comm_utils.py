@@ -25,6 +25,7 @@ address = Tuple[str, int]
 # Set the proxy we will use so the socket messages go through tor
 socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9050, True)
 
+
 class NodeP2P(object):
     """Socket wrapper to send and received signed messages"""
 
@@ -50,39 +51,42 @@ class NodeP2P(object):
         self.__private_key_path = private_key_path
 
     def bind(self, server_host: str, server_port: int):
+        logger.debug(f"Server binded to host = {server_host} and port = {server_port}")
         self.__socket.bind((server_host, server_port))
 
     def listen(self, max_queue_elements: int):
+        logger.debug(f"Server listening")
         self.__socket.listen(max_queue_elements)
 
     def accept(self) -> (socket.socket, address):
         client_socket, addr = self.__socket.accept()
+        logger.debug(f"New client accepted socket = {client_socket} and addr = {addr} ")
         return (
             NodeP2P(self.__public_key_path, self.__private_key_path, client_socket),
             addr,
         )
 
     def connect(self, server_host: str, server_port: int):
+        logger.debug(f"Connecting to server {server_host} at port {server_port}")
         self.__socket.connect((server_host, server_port))
 
     def close(self):
+        logger.debug(f"Closing connection")
         self.__socket.close()
 
     def send_signed_msg(self, msg_type: int, msg: str):
         new_msg = Message(msg_type=msg_type, msg=msg)
         final_msg = new_msg.sign_msg(self.__private_key_path)
 
-            Args:
-                private_key_path: Path were private key is located
-        """
-        self.__private_key_path = private_key_path
+        logger.debug(f"Signed message being sent: {final_msg}")
 
-    def send_signed_msg(self, msg_type: int, msg: str):
-        final_msg = self.__build_msg_structure(msg_type, msg)
         self.__socket.send(final_msg)
-    
+
     def send_encrypted_msg(self, msg: str):
         encrypted_msg = encrypt(self.__public_key_path, msg)
+
+        logger.debug(f"Encrypted message being sent: {encrypted_msg}")
+
         self.__socket.send(encrypted_msg)
 
     def recv_signed_msg(self) -> (int, str, bool):
@@ -93,10 +97,10 @@ class NodeP2P(object):
         )
 
         logger.debug(
-            f"Raw message: {raw_msg}"
+            f"Received signed message: {raw_msg}"
             + f"Comes from a trusted source? {comes_from_trusted_source}"
         )
-    
+
         msg_type = received_msg.get_msg_type()
         msg = received_msg.get_msg_body()
 
@@ -104,12 +108,8 @@ class NodeP2P(object):
 
     def recv_encrypted_msg(self) -> str:
         encrypted_msg = self.__socket.recv(BUFFER_SIZE)
-        plain_msg = decrypt(self.__private_key_path, encrypted_msg)
-        return plain_msg
 
-    def __build_msg_structure(self, msg_type: int, msg: str) -> bytes:
-        """ Build message following a structure so every bot in the P2P
-            can understand each other
+        logger.debug(f"Received encrypted message: {encrypted_msg}")
 
         plain_msg = decrypt(self.__private_key_path, encrypted_msg)
         return plain_msg
