@@ -20,17 +20,6 @@ SERVER_PORT = 50000
 MAX_QUEUE = 4
     
 
-logging.info("Starting server ...")
-server_socket = NodeP2P()
-server_socket.bind(SERVER_HOST, SERVER_PORT)
-server_socket.listen(MAX_QUEUE)
-
-while True:
-    client_socket, addr = server_socket.accept()
-    client_thread = threading.Thread(target=talk_with_client, args=(client_socket,))
-    client_thread.start()
-
-
 def talk_with_client(client_socket: NodeP2P) -> None:
     """ Keep the connection alive with the client and exchange
         messages
@@ -64,3 +53,15 @@ def msg_requires_to_be_signed(msg_type: int) -> bool:
             or it does not need to be signed
     """
     return msg_type != NEW_NODE
+
+
+logging.info("Starting server ...")
+server_socket = NodeP2P()
+server_socket.bind(SERVER_HOST, SERVER_PORT)
+server_socket.listen(MAX_QUEUE)
+
+while True:
+    client_socket, addr = server_socket.accept()
+    client_thread = threading.Thread(target=talk_with_client, args=(client_socket,))
+    client_thread.start()
+
