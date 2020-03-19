@@ -27,13 +27,13 @@ class Message(object):
 
         self.__msg = msg
 
-    def get_msg_type(self):
+    def get_msg_type(self) -> int:
         return self.__msg_type
 
-    def get_msg_body(self):
+    def get_msg_body(self) -> str:
         return self.__msg
     
-    def get_signed_hash(self):
+    def get_signed_hash(self) -> bytes:
         return self.__signed_hash
 
     def sign_msg(self, private_key_path: str) -> bytes:
@@ -56,7 +56,7 @@ class Message(object):
         )
         return final_msg
 
-    def __join_msg_type_and_msg(self):
+    def __join_msg_type_and_msg(self) -> str:
         msg = f"{self.__msg_type}{MSGTYPE_MSG_SEPARATOR}{self.__msg}"
         return msg
 
