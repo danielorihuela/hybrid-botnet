@@ -23,7 +23,7 @@ def sign_hash(hash_: bytes, private_key_path: str) -> bytes:
     return signed_hash
 
 
-def verify_message(public_key: str, msg: str, signed_hash: bytes) -> bool:
+def verify_message(public_key: str, msg: bytes, signed_hash: bytes) -> bool:
     msg_hash = calculate_hash(msg)
     public_key_bytes = load_public_key(public_key)
     try:
@@ -42,11 +42,11 @@ def verify_message(public_key: str, msg: str, signed_hash: bytes) -> bool:
     return True
 
 
-def calculate_hash(data: str) -> bytes:
-    return hashlib.sha256(data.encode(ENCODING)).hexdigest().encode(ENCODING)
+def calculate_hash(data: bytes) -> bytes:
+    return hashlib.sha256(data).hexdigest().encode(ENCODING)
 
 
-def encrypt(public_key_path: str, msg: str) -> bytes:
+def encrypt(msg: str, public_key_path: str) -> bytes:
     public_key = load_public_key(public_key_path)
     msg_in_bytes = msg.encode(ENCODING)
     ciphertext = public_key.encrypt(
@@ -60,7 +60,7 @@ def encrypt(public_key_path: str, msg: str) -> bytes:
     return ciphertext
 
 
-def decrypt(private_key_path: str, ciphertext: bytes) -> str:
+def decrypt(ciphertext: bytes, private_key_path: str) -> str:
     private_key = load_private_key(private_key_path)
     plaintext = private_key.decrypt(
         ciphertext,

