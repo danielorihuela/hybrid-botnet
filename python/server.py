@@ -32,7 +32,6 @@ public_key_path = "/etc/rootkit_demo/public/source/public_key"
 private_key_path = "/etc/rootkit_demo/private_key"
 
 socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9050, True)
-socks.set_default_proxy()
 socket.socket = socks.socksocket
 
 
@@ -74,7 +73,8 @@ def talk_with_client(client_socket: socket.socket) -> None:
             next_hop = select_random_neighbour()
 
         updated_msg_info = update_num_anonymizers(msg_info)
-        neighbour_node = connect_through_tor(next_hop, TOR_SERVER_PORT)
+        neighbour_node = socket.socket()
+        neighbour_node.connect((next_hop, TOR_SERVER_PORT))
         forward(neighbour_node, updated_msg_info)
         send_back(client_socket, neighbour_node)
     else:
@@ -89,13 +89,6 @@ def talk_with_client(client_socket: socket.socket) -> None:
                     client_socket.send(encrypted_msg)
             else:
                 logging.info("Someone is trying to break in")
-
-
-def connect_through_tor(onion: str, port: int) -> socket.socket:
-    new_node = socket.socket()
-    new_node.connect((onion, port))
-
-    return new_node
 
 
 def update_num_anonymizers(msg_info: dict) -> dict:

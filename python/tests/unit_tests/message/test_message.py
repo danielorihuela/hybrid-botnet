@@ -15,8 +15,8 @@ from botnet_p2p import (
     MSG_SEPARATOR,
 )
 
-public_key_path = os.path.join(os.getcwd(), "tests/auxiliar_files/public_key")
-private_key_path = os.path.join(os.getcwd(), "tests/auxiliar_files/private_key")
+public_key_path = os.path.join(os.getcwd(), "python/tests/auxiliar_files/public_key")
+private_key_path = os.path.join(os.getcwd(), "python/tests/auxiliar_files/private_key")
 
 
 def test_structure_msg_default_values():

@@ -4,5 +4,7 @@ channels:
 dependencies:
   - python=3.7.6
   - cryptography=2.8
-  - pip=20.0.2
   - black
+  - pip=20.0.2
+  - pip:
+    - pyinstaller==3.6
