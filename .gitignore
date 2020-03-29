@@ -136,3 +136,5 @@ dmypy.json
 
 # vscodium files
 .vscode/
+
+rootkit_demo/

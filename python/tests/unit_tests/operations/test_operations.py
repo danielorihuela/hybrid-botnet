@@ -1,6 +1,6 @@
 import pytest
 
-from botnet_p2p.operations import execute_command, select_random_neighbour
+from python.botnet_p2p.operations import execute_command, select_random_neighbour
 
 
 def test_execute_ls_command_returns_correct_output():

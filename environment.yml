@@ -8,3 +8,5 @@ dependencies:
   - pip=20.0.2
   - pip:
     - pyinstaller==3.6
+    - pysocks==1.7.1
+    - cmd2==1.0.1

@@ -7,7 +7,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
-from botnet_p2p import ENCODING
+from . import ENCODING, logger
 
 
 def sign_hash(hash_: bytes, private_key_path: str) -> bytes:
@@ -15,11 +15,11 @@ def sign_hash(hash_: bytes, private_key_path: str) -> bytes:
     signed_hash = private_key.sign(
         hash_,
         padding.PSS(
-            mgf=padding.MGF1(hashes.SHA256()),
-            salt_length=padding.PSS.MAX_LENGTH
+            mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH
         ),
-        hashes.SHA256()
+        hashes.SHA256(),
     )
+    logger.debug(f"{hash_} signed is {signed_hash}")
     return signed_hash
 
 
@@ -31,10 +31,9 @@ def verify_message(public_key: str, msg: bytes, signed_hash: bytes) -> bool:
             signed_hash,
             msg_hash,
             padding.PSS(
-                mgf=padding.MGF1(hashes.SHA256()),
-                salt_length=padding.PSS.MAX_LENGTH
+                mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH
             ),
-            hashes.SHA256()
+            hashes.SHA256(),
         )
     except cryptography.exceptions.InvalidSignature:
         return False
@@ -43,7 +42,9 @@ def verify_message(public_key: str, msg: bytes, signed_hash: bytes) -> bool:
 
 
 def calculate_hash(data: bytes) -> bytes:
-    return hashlib.sha256(data).hexdigest().encode(ENCODING)
+    hash_ = hashlib.sha256(data).hexdigest().encode(ENCODING)
+    logger.debug(f"{data} hash is {hash_}")
+    return hash_
 
 
 def encrypt(msg: str, public_key_path: str) -> bytes:
@@ -54,9 +55,11 @@ def encrypt(msg: str, public_key_path: str) -> bytes:
         padding.OAEP(
             mgf=padding.MGF1(algorithm=hashes.SHA256()),
             algorithm=hashes.SHA256(),
-            label=None
-        )
+            label=None,
+        ),
     )
+    logger.debug(f"Plaintext to encrypt = {msg}")
+    logger.debug(f"Ciphertext = {ciphertext}")
     return ciphertext
 
 
@@ -67,33 +70,33 @@ def decrypt(ciphertext: bytes, private_key_path: str) -> str:
         padding.OAEP(
             mgf=padding.MGF1(algorithm=hashes.SHA256()),
             algorithm=hashes.SHA256(),
-            label=None
-        )
+            label=None,
+        ),
     )
+    logger.debug(f"Ciphertext to decrypt = {ciphertext}")
+    logger.debug(f"Plaintext = {plaintext}")
     return plaintext.decode(ENCODING)
 
 
 def load_private_key(
-    private_key_path: str,
-    password: str = None
+    private_key_path: str, password: str = None
 ) -> cryptography.hazmat.backends.openssl.rsa._RSAPrivateKey:
+    logger.debug(f"Load private RSA key from {private_key_path}")
     with open(private_key_path, "rb") as pem:
         private_key = serialization.load_pem_private_key(
-            pem.read(),
-            password=password,
-            backend=default_backend()
+            pem.read(), password=password, backend=default_backend()
         )
 
     return private_key
 
 
 def load_public_key(
-    public_key_path: str
+    public_key_path: str,
 ) -> cryptography.hazmat.backends.openssl.rsa._RSAPublicKey:
+    logger.debug(f"Load public RSA key from {public_key_path}")
     with open(public_key_path, "rb") as key_file:
         pub_bytes = serialization.load_pem_public_key(
-            key_file.read(),
-            backend=default_backend()
+            key_file.read(), backend=default_backend()
         )
 
     return pub_bytes

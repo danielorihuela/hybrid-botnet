@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from botnet_p2p.message import (
+from python.botnet_p2p.message import (
     structure_msg,
     sign_structured_msg,
     __get_msg_and_type,
@@ -10,7 +10,7 @@ from botnet_p2p.message import (
     __get_signed_hash,
     breakdown_msg,
 )
-from botnet_p2p import (
+from python.botnet_p2p import (
     ENCODING,
     MSG_SEPARATOR,
 )

