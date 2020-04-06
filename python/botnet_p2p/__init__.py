@@ -8,6 +8,7 @@ MSG_SEPARATOR = "<<"
 
 BUFFER_SIZE = 4096
 ENCODING = "latin1"
+EXIT = "exit"
 
 
 logger = logging.getLogger(__name__)

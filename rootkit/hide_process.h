@@ -9,7 +9,7 @@
 
 // File in which we will store the pids we do not
 // want to show
-static const char *processes_to_hide = "/etc/rootkit_demo/process.txt";
+static const char *processes_to_hide = "/etc/rootkit_demo/process";
 
 // System path in which process are store (/proc)
 static const char *path_name_proc = "/proc";
