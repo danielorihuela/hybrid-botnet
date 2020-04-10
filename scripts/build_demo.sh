@@ -7,7 +7,7 @@ SOURCE=source
 PYTHON=python
 HTTP=http
 
-rm $ROOTKIT -r
+rm $OUTPUT -r
 
 mkdir $OUTPUT
 mkdir $OUTPUT/$ROOTKIT
