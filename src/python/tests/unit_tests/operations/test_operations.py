@@ -10,7 +10,7 @@ from python.botnet_p2p.operations import (
 
 
 random.seed(30)
-node_files = "python/tests/auxiliar_files/nodes"
+node_files = "src/python/tests/auxiliar_files/nodes"
 
 
 def test_execute_ls_command_returns_correct_output():

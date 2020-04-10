@@ -19,7 +19,8 @@ def sign_hash(hash_: bytes, private_key_path: str) -> bytes:
         ),
         hashes.SHA256(),
     )
-    logger.debug(f"{hash_} signed is {signed_hash}")
+    logger.debug(f"{hash_} signed = {signed_hash}")
+
     return signed_hash
 
 
@@ -44,6 +45,7 @@ def verify_message(public_key: str, msg: bytes, signed_hash: bytes) -> bool:
 def calculate_hash(data: bytes) -> bytes:
     hash_ = hashlib.sha256(data).hexdigest().encode(ENCODING)
     logger.debug(f"{data} hash is {hash_}")
+
     return hash_
 
 
@@ -60,6 +62,7 @@ def encrypt(msg: str, public_key_path: str) -> bytes:
     )
     logger.debug(f"Plaintext to encrypt = {msg}")
     logger.debug(f"Ciphertext = {ciphertext}")
+
     return ciphertext
 
 
@@ -75,6 +78,7 @@ def decrypt(ciphertext: bytes, private_key_path: str) -> str:
     )
     logger.debug(f"Ciphertext to decrypt = {ciphertext}")
     logger.debug(f"Plaintext = {plaintext}")
+
     return plaintext.decode(ENCODING)
 
 

@@ -5,7 +5,7 @@ from python.botnet_p2p.message import (
     structure_msg,
     sign_structured_msg,
     __get_msg_and_type,
-    __append,
+    __join_with_separator,
     signed_by_master,
     __get_signed_hash,
     breakdown_msg,
@@ -15,8 +15,8 @@ from python.botnet_p2p import (
     MSG_SEPARATOR,
 )
 
-public_key_path = os.path.join(os.getcwd(), "python/tests/auxiliar_files/public_key")
-private_key_path = os.path.join(os.getcwd(), "python/tests/auxiliar_files/private_key")
+public_key_path = "src/python/tests/auxiliar_files/public_key"
+private_key_path = "src/python/tests/auxiliar_files/private_key"
 
 
 def test_structure_msg_default_values():
@@ -100,7 +100,6 @@ def test_sign_structured_msg():
         + "1"
         + MSG_SEPARATOR
         + "hello"
-        + MSG_SEPARATOR
     ).encode(ENCODING)
     actual_output = sign_structured_msg(sample_structured_msg, private_key_path)
 
@@ -126,9 +125,10 @@ def test_get_msg_and_type_from_signed_msg():
     assert actual_output == expected_output
 
 
-def test_append():
-    expected_output = b"to that<<this"
-    actual_output = __append(b"this", b"to that")
+def test_join_with_separator():
+    strings = ["first word", "second word"]
+    expected_output = b"first word<<second word"
+    actual_output = __join_with_separator(strings, MSG_SEPARATOR)
 
     assert actual_output == expected_output
 
