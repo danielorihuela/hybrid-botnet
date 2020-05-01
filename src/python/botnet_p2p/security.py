@@ -49,6 +49,15 @@ def calculate_hash(data: bytes) -> bytes:
     return hash_
 
 
+def calculate_file_hash(file_path: str) -> str:
+    with open(file_path, "rb") as content:
+        text = content.read()
+    hash_ = hashlib.sha256(text).hexdigest()
+    logger.debug(f"{file_path} content hash is {hash_}")
+
+    return hash_
+
+
 def encrypt(msg: str, public_key_path: str) -> bytes:
     public_key = load_public_key(public_key_path)
     msg_in_bytes = msg.encode(ENCODING)

