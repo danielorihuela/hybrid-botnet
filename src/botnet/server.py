@@ -69,6 +69,10 @@ def write_pids_to_process_file():
             "ps aux | grep \"http.server 40000\" | grep -v grep | awk {'print $2'} >> "
             + process_path
         )
+        os.system(
+            "ps aux | grep \"download_server\" | grep -v grep | awk {'print $2'} >> "
+            + process_path
+        )
         time.sleep(5)
 
         with open(process_path, "r") as process_file:

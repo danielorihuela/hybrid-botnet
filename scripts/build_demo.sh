@@ -4,7 +4,7 @@ ROOTKIT=rootkit_demo
 PRIVATE=private
 PUBLIC=public
 SOURCE=source
-PYTHON=python
+BOTNET=botnet
 HTTP=http
 
 rm $OUTPUT -r
@@ -19,12 +19,12 @@ touch $OUTPUT/$ROOTKIT/$PRIVATE/full_peer_list
 mkdir $OUTPUT/$ROOTKIT/$PUBLIC
 touch $OUTPUT/$ROOTKIT/$PUBLIC/peer_list
 mkdir $OUTPUT/$ROOTKIT/$PUBLIC/$SOURCE
-cp -r $GITSOURCE/$PYTHON/botnet_p2p $OUTPUT/$ROOTKIT/$PUBLIC/$SOURCE
-cp $GITSOURCE/$PYTHON/server.py $OUTPUT/$ROOTKIT/$PUBLIC/$SOURCE
+cp -r $GITSOURCE/$BOTNET/botnet_p2p $OUTPUT/$ROOTKIT/$PUBLIC/$SOURCE
+cp $GITSOURCE/$BOTNET/server.py $OUTPUT/$ROOTKIT/$PUBLIC/$SOURCE
 mkdir $OUTPUT/$ROOTKIT/$PUBLIC/$HTTP
 cp $GITSOURCE/$HTTP/* $OUTPUT/$ROOTKIT/$PUBLIC/$HTTP
 
-python3 $GITSOURCE/$PYTHON/generate_rsa_keys.py
+python3 $GITSOURCE/$BOTNET/generate_rsa_keys.py
 mv private_key $OUTPUT
 mv public_key $OUTPUT/$ROOTKIT/$PUBLIC/$SOURCE
 

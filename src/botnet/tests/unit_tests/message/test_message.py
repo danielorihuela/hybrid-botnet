@@ -14,8 +14,8 @@ from botnet_p2p import (
     MSG_SEPARATOR,
 )
 
-public_key_path = "src/python/tests/auxiliar_files/public_key"
-private_key_path = "src/python/tests/auxiliar_files/private_key"
+public_key_path = "src/botnet/tests/auxiliar_files/public_key"
+private_key_path = "src/botnet/tests/auxiliar_files/private_key"
 
 
 @pytest.fixture(scope="module")

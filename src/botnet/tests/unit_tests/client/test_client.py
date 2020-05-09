@@ -4,7 +4,7 @@ from client import seed_name_list, node_name_list, complete_node_list, node_from
 
 
 seed_directions = [("down.onion", "comm.onion")]
-node_files = "src/python/tests/auxiliar_files/node_list"
+node_files = "src/botnet/tests/auxiliar_files/node_list"
 
 
 def test_seed_name_list():
