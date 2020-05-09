@@ -85,7 +85,7 @@ class MyPrompt(cmd2.Cmd):
     def do_set_pem(self, args: argparse.Namespace):
         path = args.private_key_path
         if not path:
-            print_red("Not path to private key file provided")
+            print_red("No path to private key file provided")
 
         self.__private_key_path = path
         print_yellow(f"Private key path -> {self.__private_key_path}")
@@ -104,7 +104,7 @@ class MyPrompt(cmd2.Cmd):
         "--file-nodes",
         dest="node_list_path",
         help="Path to file containing a list with nodes in the"
-        + "format (name, download address, communication address)",
+        + " format (name, download address, communication address)",
         default=None,
     )
 
@@ -182,8 +182,8 @@ class MyPrompt(cmd2.Cmd):
         "--hash-from-file",
         type=str,
         dest="file_path_to_hash",
-        help="File we need to calculate the has so each peers knows if they"
-        + "copy needs an update",
+        help="File we need to calculate the hash so each peers knows if their"
+        + " copy needs an update",
         required=True,
     )
     update_argparser.add_argument(
@@ -199,7 +199,7 @@ class MyPrompt(cmd2.Cmd):
         "--file-nodes",
         dest="node_list_path",
         help="Path to file containing a list with nodes in the"
-        + "format (name, download address, communication address)",
+        + " format (name, download address, communication address)",
         default=None,
     )
 
