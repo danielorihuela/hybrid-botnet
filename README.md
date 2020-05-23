@@ -147,7 +147,7 @@ This will open a file and start a python script in the background that will inst
 
 Once the seed machine and the victim are set up, you can interact with them through a client, it can be found in `src/botnet/client.py`.
 
-The only left detail is that you will need to store the seed and victim onions directly in the client code or in a text file to access them. 
+The only left detail is that you will need to store the seed and victim onions directly in the client code or in a text file to access them. Moreover, take into account that to be able to communicate with the victims you will need TOR. You can either install it or use a docker, this [guide](https://dev.to/boris/running-tor-using-docker-4d7h) may help you.
 
 In the previous section you modified the `exploit` with your own seed onions directions. You will need to repeat that process to modify the client. Repeat step 2 of *Generate the text file to infect the victim*.
 
@@ -157,7 +157,7 @@ Moreover, if you have already some victims you will need to retrieve this data f
 
 ![node_list](visual_media/node_list.png)
 
-Now you are good to go. Just execute`python3 /src/botnet/client.py` and a shell called chameleon will appear. You can type `help` to see the different commands and `"command" -h` to know what a command  works. Moreover, take into account that to be able to communicate with the victims you will need TOR. You can either install it or use a docker, this [guide](https://dev.to/boris/running-tor-using-docker-4d7h) may help you.
+Now you are good to go. Just execute`python3 /src/botnet/client.py` and a shell called chameleon will appear. You can type `help` to see the different commands and `"command" -h` to know what a command  works.
 
 ## Video demonstration
 
