@@ -1,4 +1,4 @@
-# P2P Botnet Over TOR
+# Hybrid Botnet Over TOR
 
 This repository contains the code necessary to deploy a botnet targeting Linux machines to demonstrate what can be done with this type of systems. This was used for my final degree project on the study of espionage systems and the development of a botnet.
 
@@ -45,8 +45,8 @@ You can use conda to replicate de developing environment just by running `. ./se
     - Hide himself
     - Hide TCP4 connections
     - Persistence (Loadable Kernel Module is loaded at boot up)
-    - Start P2P Botnet code
-- P2P Botnet developed in Python 3.7.6
+    - Start hybrid Botnet code
+- Hybrid Botnet developed in Python 3.7.6
     - Obtain a pseudo shell from any victim
     - Use any victim as [anonymizer](https://en.wikipedia.org/wiki/Anonymizer)
     - Update the code of every victim in the botnet
@@ -58,9 +58,9 @@ You can use conda to replicate de developing environment just by running `. ./se
 
 ## Set up the Demo
 
-To execute the demo, you will need to set up a seed machine from where the victims will download the code to execute the P2P server and client side logic. Some files will need to be created: the rootkit.ko to load a Loadable Kernel Module to the Linux kernel and a txt file that will infect the victim on the event that it is opened.
+To execute the demo, you will need to set up a seed machine from where the victims will download the code to execute the hybrid server and client side logic. Some files will need to be created: the rootkit.ko to load a Loadable Kernel Module to the Linux kernel and a txt file that will infect the victim on the event that it is opened.
 
-At this point, clone the repository and enter to the main folder if you have not already. You should find yourself in `.../p2p-botnet/`.
+At this point, clone the repository and enter to the main folder if you have not already. You should find yourself in `.../hybrid-botnet/`.
 
 ### Set up the seed machine
 
