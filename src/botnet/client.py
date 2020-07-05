@@ -7,10 +7,10 @@ import argparse
 import cmd2
 from cmd2 import with_argparser, with_category, categorize
 
-from botnet_p2p import ENCODING
-from botnet_p2p.message import structure_msg, sign_structured_msg
-from botnet_p2p.security import decrypt, calculate_file_hash
-from botnet_p2p.operations import close_terminal, broadcast
+from botnet_hybrid import ENCODING
+from botnet_hybrid.message import structure_msg, sign_structured_msg
+from botnet_hybrid.security import decrypt, calculate_file_hash
+from botnet_hybrid.operations import close_terminal, broadcast
 
 BUFFER_SIZE = 4096
 TOR_SERVER_PORT = 50001

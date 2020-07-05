@@ -1,4 +1,4 @@
-name: demo_botnet_p2p
+name: demo_botnet_hybrid
 channels:
   - defaults
 dependencies:

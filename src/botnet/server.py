@@ -1,4 +1,4 @@
-"""Server side of the p2p communication protocol"""
+"""Server side of the hybrid communication protocol"""
 
 import os
 import time
@@ -7,15 +7,15 @@ import socket
 import logging
 import threading
 
-from botnet_p2p import BUFFER_SIZE
-from botnet_p2p.operations import (
+from botnet_hybrid import BUFFER_SIZE
+from botnet_hybrid.operations import (
     add_new_infected_machine,
     terminal_session,
     establish_tunnel,
     broadcast,
 )
-from botnet_p2p.message import breakdown_msg, signed_by_master
-from botnet_p2p.security import calculate_file_hash
+from botnet_hybrid.message import breakdown_msg, signed_by_master
+from botnet_hybrid.security import calculate_file_hash
 
 logging.basicConfig(level=logging.DEBUG)
 

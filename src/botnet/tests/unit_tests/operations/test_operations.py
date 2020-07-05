@@ -1,6 +1,6 @@
 import random
 
-from botnet_p2p.operations import (
+from botnet_hybrid.operations import (
     __execute_command,
     __update_num_anonymizers,
     __select_random_neighbour,
