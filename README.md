@@ -1,6 +1,6 @@
 # Hybrid Botnet Over TOR
 
-This repository contains the code necessary to deploy a botnet targeting Linux machines to demonstrate what can be done with this type of systems. This was used for my final degree project on the study of espionage systems and the development of a botnet.
+This repository contains the code necessary to deploy a botnet targeting Linux machines to demonstrate what can be done with this type of systems. This was used for my final degree project on the study of espionage systems and the development of a botnet. You can see the memory en the "memory" folder or in https://repositori.upf.edu/handle/10230/45890.
 
 ## Table of contents
 
